@@ -17,7 +17,7 @@ from app.schemas.user import UserCreate
 
 
 async def get_user_db(session: AsyncSession = Depends(get_async_session)):
-    yield SQLAlchemyUserDatabase(session, User) 
+    yield SQLAlchemyUserDatabase(session, User)
 
 
 bearer_transport = BearerTransport(tokenUrl='auth/jwt/login')
@@ -56,7 +56,7 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
 
 
 async def get_user_manager(user_db=Depends(get_user_db)):
-    yield UserManager(user_db) 
+    yield UserManager(user_db)
 
 
 fastapi_users = FastAPIUsers[User, int](
@@ -65,4 +65,4 @@ fastapi_users = FastAPIUsers[User, int](
 )
 
 current_user = fastapi_users.current_user(active=True)
-current_superuser = fastapi_users.current_user(active=True, superuser=True) 
+current_superuser = fastapi_users.current_user(active=True, superuser=True)

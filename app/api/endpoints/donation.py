@@ -49,9 +49,9 @@ async def create_donation(
 
 
 @router.get(
-        '/my',
-        response_model=List[DonationDB],
-        response_model_exclude={*EXCLUDE_FIELDS}
+    '/my',
+    response_model=List[DonationDB],
+    response_model_exclude={*EXCLUDE_FIELDS}
 )
 async def get_user_donations(
     session: AsyncSession = Depends(get_async_session),

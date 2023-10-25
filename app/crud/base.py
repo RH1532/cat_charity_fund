@@ -1,4 +1,4 @@
-from typing import Generic, List, Optional, Type, TypeVar
+from typing import Generic, List, Optional, TypeVar
 
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
@@ -71,7 +71,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     async def remove(
             self,
             db_object: ModelType,
-            session: AsyncSession, 
+            session: AsyncSession,
     ) -> ModelType:
         await session.delete(db_object)
         await session.commit()
