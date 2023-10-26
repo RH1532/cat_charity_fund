@@ -39,7 +39,7 @@ async def investment_process(
                 mark_as_invested_and_update(db_object)
 
         session.merge(db_object)
-    
+
     session.merge(object_in)
     await session.commit()
     await session.refresh(object_in)
