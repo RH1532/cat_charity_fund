@@ -26,13 +26,13 @@ async def check_charity_project_exists(
     project_id: int,
     session: AsyncSession,
 ) -> CharityProject:
-    project = await charity_project_crud.get(project_id, session)
-    if project is None:
+    charity_project = await charity_project_crud.get(project_id, session)
+    if charity_project is None:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
             detail='Проект не найден!'
         )
-    return project
+    return charity_project
 
 
 async def check_project_was_closed(
@@ -47,7 +47,7 @@ async def check_project_was_closed(
     if project_close_date:
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
-            detail='Этот проект уже был закрыт и не может быть обновлен.'
+            detail='Закрытый проект нельзя редактировать!'
         )
 
 
@@ -55,7 +55,8 @@ async def check_project_was_invested(
     project_id: int,
     session: AsyncSession
 ):
-    invested_project = await check_charity_project_exists(project_id, session)
+    invested_project = await charity_project_crud.get_invested_amount(project_id,
+                                                                      session)
     if invested_project:
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
@@ -63,17 +64,16 @@ async def check_project_was_invested(
         )
 
 
-async def check_charity_project_fully_invested(
+async def check_charity_project_invested_amount(
     project_id: int,
     session: AsyncSession,
-    full_amount_to_update: PositiveInt
+    amount_to_update: PositiveInt
 ):
-    db_project_invested_amount = await (
-        charity_project_crud.get_invested_amount(
-            project_id, session
-        )
+    project_invested_amount = await charity_project_crud.get_invested_amount(
+        project_id,
+        session
     )
-    if db_project_invested_amount > full_amount_to_update:
+    if project_invested_amount > amount_to_update:
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
             detail='Нужно больше донатить',

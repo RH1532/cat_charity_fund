@@ -4,16 +4,16 @@ from typing import Optional
 
 
 class CharityProjectBase(BaseModel):
-    name: str = Field(..., min_length=1, max_length=100)
+    name: Optional[str] = Field(None, min_length=1, max_length=100)
     description: Optional[str] = Field(None, min_length=1)
-    full_amount: PositiveInt
+    full_amount: Optional[PositiveInt]
 
     class Config:
         extra = Extra.forbid
 
 
 class CharityProjectCreate(CharityProjectBase):
-    name: str = Field(None, min_length=1, max_length=100)
+    name: str = Field(..., min_length=1, max_length=100)
     description: str = Field(..., min_length=1)
     full_amount: PositiveInt
 
