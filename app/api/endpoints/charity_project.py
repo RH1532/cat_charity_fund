@@ -48,9 +48,10 @@ async def create_reservation(
                                                     commit=False)
     uninvested_donations = await donation_crud.get_uninvested_objects(session)
     investments = investment_process(new_project, uninvested_donations)
+    for donation in investments:
+        session.add(donation)
     await session.commit()
     await session.refresh(new_project)
-    await session.refresh(investments)
     return new_project
 
 

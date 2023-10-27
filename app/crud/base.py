@@ -45,8 +45,10 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             commit: bool = True
     ) -> ModelType:
         object_in_data = object_in.dict()
-        if user:
+        if user is not None:
             object_in_data['user_id'] = user.id
+        if 'invested_amount' not in object_in_data:
+            object_in_data['invested_amount'] = 0
         db_object = self.model(**object_in_data)
         session.add(db_object)
         if commit:

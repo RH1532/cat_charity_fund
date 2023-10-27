@@ -43,7 +43,7 @@ python3 -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 ### Команды
-- `alembic upgrade head`: Обновление миграций.
+- `alembic upgrade head`: Применение миграций.
 - `uvicorn app.main:app`: Запустить проект. 
 ## Справка
 ## Проект QRKot — это приложение для Благотворительного фонда поддержки котиков
