@@ -23,7 +23,6 @@ def investment_process(
                 source.close_date = datetime.now()
             if source.fully_invested:
                 sources.remove(source)
-    
     return target
 
 
