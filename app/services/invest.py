@@ -1,46 +1,38 @@
 from datetime import datetime
-from typing import Union
+from typing import List
 
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.models.charity_project import CharityProject
-from app.models.donation import Donation
+from app.models.base import BaseModel
 
 
-def mark_as_invested_and_update(object):
-    object.fully_invested = True
-    object.close_date = datetime.now()
+def investment_process(
+    target: BaseModel,
+    sources: List[BaseModel]
+):
+    for source in sources:
+        while (target.invested_amount or 0) < (target.full_amount or 0) and not source.fully_invested:
+            source_invested = source.invested_amount if source.invested_amount is not None else 0
+            needed_money = (source.full_amount or 0) - source_invested
+            amount_to_invest = min((target.full_amount or 0) - (target.invested_amount or 0), needed_money)
+            target.invested_amount = (target.invested_amount or 0) + amount_to_invest
+            source.invested_amount = source_invested + amount_to_invest
+            if (target.invested_amount or 0) == (target.full_amount or 0):
+                target.fully_invested = True
+                target.close_date = datetime.now()
+            if (source.invested_amount or 0) == (source.full_amount or 0):
+                source.fully_invested = True
+                source.close_date = datetime.now()
+            if source.fully_invested:
+                sources.remove(source)
+    
+    return target
 
 
-async def investment_process(
-    object_in: Union[CharityProject, Donation],
-    session: AsyncSession
-) -> Union[CharityProject, Donation]:
-    db_object = CharityProject if isinstance(object_in, Donation) else Donation
-
-    db_objects = await session.execute(
-        select(db_object)
-        .where(db_object.fully_invested.is_(False))
-        .order_by(db_object.create_date.desc(), db_object.id.desc())
-    )
-    db_objects = db_objects.scalars().all()
-
-    while db_objects and object_in.full_amount > object_in.invested_amount:
-        db_object = db_objects.pop()
-
-        needed_money = db_object.full_amount - db_object.invested_amount
-
-        object_in.invested_amount += min(object_in.full_amount, needed_money)
-        if object_in.invested_amount == object_in.full_amount:
-            mark_as_invested_and_update(object_in)
-            db_object.invested_amount += object_in.full_amount
-            if db_object.invested_amount == db_object.full_amount:
-                mark_as_invested_and_update(db_object)
-
-        session.merge(db_object)
-
+async def update_db(
+    session,
+    db_object,
+    object_in
+):
+    session.merge(db_object)
     session.merge(object_in)
     await session.commit()
     await session.refresh(object_in)
-    return object_in

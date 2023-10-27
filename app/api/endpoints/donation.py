@@ -8,7 +8,7 @@ from app.core.user import current_superuser, current_user
 from app.crud.donation import donation_crud
 from app.models import User
 from app.schemas.donation import DonationCreate, DonationDB
-from app.services.invest import investment_process
+from app.services.invest import investment_process, update_db
 
 router = APIRouter()
 
@@ -43,8 +43,10 @@ async def create_donation(
     session: AsyncSession = Depends(get_async_session),
     user: User = Depends(current_user),
 ):
-    new_donation = await donation_crud.create(donation, session, user)
-    new_donation = await investment_process(new_donation, session)
+    new_donation = await donation_crud.create(donation, session, user, commit=False)
+    incomplete_objects = await donation_crud.get_incomplete_objects(session)
+    new_donation = investment_process(new_donation, incomplete_objects)
+    await update_db(session, incomplete_objects, new_donation)
     return new_donation
 
 

@@ -14,8 +14,7 @@ from app.crud.charity_project import charity_project_crud
 from app.schemas.charity_project import (CharityProjectCreate,
                                          CharityProjectDB,
                                          CharityProjectUpdate)
-from app.services.invest import investment_process
-
+from app.services.invest import investment_process, update_db
 router = APIRouter()
 
 
@@ -43,8 +42,10 @@ async def create_reservation(
     await check_charity_project_name_duplicate(
         charity_project.name, session
     )
-    new_project = await charity_project_crud.create(charity_project, session)
-    new_project = await investment_process(new_project, session)
+    new_project = await charity_project_crud.create(charity_project, session, commit=False)
+    incomplete_objects = await charity_project_crud.get_incomplete_objects(session)
+    new_project = investment_process(new_project, incomplete_objects)
+    await update_db(session, incomplete_objects, new_project)
     return new_project
 
 
