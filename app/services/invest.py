@@ -15,10 +15,18 @@ def investment_process(
         if source.fully_invested:
             continue
 
-        source_invested = source.invested_amount or 0
-        needed_money = source.full_amount - source_invested
-        target_invested = target.invested_amount or 0
+        target_invested = (
+            target.invested_amount
+            if target.invested_amount
+            is not None else 0
+        )
+        source_invested = (
+            source.invested_amount
+            if source.invested_amount
+            is not None else 0
+        )
 
+        needed_money = source.full_amount - source_invested
         amount_to_invest = min(target.full_amount - target_invested, needed_money)
         target.invested_amount = target_invested + amount_to_invest
         source.invested_amount = source_invested + amount_to_invest
