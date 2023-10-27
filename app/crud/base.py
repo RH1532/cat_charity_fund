@@ -103,13 +103,13 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         )
         return db_object.scalars().first()
 
-    async def get_incomplete_objects(
+    async def get_uninvested_objects(
         self,
         session: AsyncSession
     ):
         db_objects = await session.execute(
             select(self.model)
             .where(self.model.fully_invested.is_(False))
-            .order_by(self.model.create_date.desc(), self.model.id.desc())
+            .order_by(self.model.id)
         )
         return db_objects.scalars().all()

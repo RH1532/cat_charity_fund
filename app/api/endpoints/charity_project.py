@@ -11,6 +11,7 @@ from app.api.validators import (check_charity_project_exists,
 from app.core.db import get_async_session
 from app.core.user import current_superuser
 from app.crud.charity_project import charity_project_crud
+from app.crud.donation import donation_crud
 from app.schemas.charity_project import (CharityProjectCreate,
                                          CharityProjectDB,
                                          CharityProjectUpdate)
@@ -42,10 +43,12 @@ async def create_reservation(
     await check_charity_project_name_duplicate(
         charity_project.name, session
     )
-    new_project = await charity_project_crud.create(charity_project, session, commit=False)
-    incomplete_objects = await charity_project_crud.get_incomplete_objects(session)
-    new_project = investment_process(new_project, incomplete_objects)
-    await update_db(session, incomplete_objects, new_project)
+    new_project = await charity_project_crud.create(charity_project,
+                                                    session,
+                                                    commit=False)
+    uninvested_objects = await donation_crud.get_uninvested_objects(session)
+    investment = investment_process(new_project, uninvested_objects)
+    await update_db(session, investment)
     return new_project
 
 
