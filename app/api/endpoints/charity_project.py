@@ -46,10 +46,9 @@ async def create_reservation(
     new_project = await charity_project_crud.create(charity_project,
                                                     session,
                                                     commit=False)
-    uninvested_donations = await donation_crud.get_uninvested_objects(session)
-    investments = investment_process(new_project, uninvested_donations)
-    for donation in investments:
-        session.add(donation)
+    donations_to_add = investment_process(new_project,
+                                          await donation_crud.get_uninvested_objects(session))
+    session.add_all(donations_to_add)
     await session.commit()
     await session.refresh(new_project)
     return new_project

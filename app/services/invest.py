@@ -8,19 +8,16 @@ def investment_process(
     target: CharityDonationModel,
     sources: List[CharityDonationModel]
 ) -> List[CharityDonationModel]:
-    updated_sources = []
+    updated = []
     for source in sources:
-        target_invested = target.invested_amount
-        source_invested = source.invested_amount
-        amount_to_invest = min(target.full_amount - target_invested,
-                               source.full_amount - source_invested)
-        for changed_object in (target, source):
-            changed_object.invested_amount += amount_to_invest
+        amount_to_invest = min(target.full_amount - target.invested_amount,
+                               source.full_amount - source.invested_amount)
         for obj in (target, source):
+            obj.invested_amount += amount_to_invest
             if obj.invested_amount == obj.full_amount:
                 obj.fully_invested = True
                 obj.close_date = datetime.now()
         if target.fully_invested:
             break
-        updated_sources.append(source)
-    return updated_sources
+        updated.append(source)
+    return updated
