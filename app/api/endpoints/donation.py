@@ -9,7 +9,7 @@ from app.crud.charity_project import charity_project_crud
 from app.crud.donation import donation_crud
 from app.models import User
 from app.schemas.donation import DonationCreate, DonationDB
-from app.services.invest import investment_process, update_db
+from app.services.invest import investment_process
 
 router = APIRouter()
 
@@ -49,7 +49,8 @@ async def create_donation(
                                               commit=False)
     uninvested_objects = await charity_project_crud.get_uninvested_objects(session)
     investment = investment_process(new_donation, uninvested_objects)
-    await update_db(session, investment)
+    await session.commit()
+    await session.refresh(investment)
     return new_donation
 
 

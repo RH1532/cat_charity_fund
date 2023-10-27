@@ -1,34 +1,34 @@
 from datetime import datetime
 from typing import List, Set
 
-from app.models.base import BaseModel
+from app.models.base import CharityDonationModel
 
 
 def investment_process(
-    target: BaseModel,
-    sources: List[BaseModel]
+    target: CharityDonationModel,
+    sources: List[CharityDonationModel]
 ) -> Set:
+    if target.fully_invested:
+        return target
+
     for source in sources:
-        while (target.invested_amount or 0) < target.full_amount and not source.fully_invested:
-            source_invested = source.invested_amount if source.invested_amount is not None else 0
-            needed_money = source.full_amount - source_invested
-            amount_to_invest = min(target.full_amount - (target.invested_amount or 0), needed_money)
-            target.invested_amount = (target.invested_amount or 0) + amount_to_invest
-            source.invested_amount = source_invested + amount_to_invest
-            if target.invested_amount == target.full_amount:
-                target.fully_invested = True
-                target.close_date = datetime.now()
-            if source.invested_amount == source.full_amount:
-                source.fully_invested = True
-                source.close_date = datetime.now()
-            if source.fully_invested:
-                sources.remove(source)
+        if source.fully_invested:
+            continue
+
+        source_invested = source.invested_amount or 0
+        needed_money = source.full_amount - source_invested
+        target_invested = target.invested_amount or 0
+
+        amount_to_invest = min(target.full_amount - target_invested, needed_money)
+        target.invested_amount = target_invested + amount_to_invest
+        source.invested_amount = source_invested + amount_to_invest
+
+        for obj in (target, source):
+            if obj.invested_amount == obj.full_amount:
+                obj.fully_invested = True
+                obj.close_date = datetime.now()
+
+        if target.fully_invested:
+            break
+
     return target
-
-
-async def update_db(
-    session,
-    object_in
-):
-    await session.commit()
-    await session.refresh(object_in)

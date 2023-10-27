@@ -5,7 +5,7 @@ from sqlalchemy import Boolean, Column, CheckConstraint, DateTime, Integer
 from app.core.db import Base
 
 
-class BaseModel(Base):
+class CharityDonationModel(Base):
     __abstract__ = True
 
     full_amount = Column(Integer, nullable=False)

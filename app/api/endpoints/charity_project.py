@@ -15,7 +15,7 @@ from app.crud.donation import donation_crud
 from app.schemas.charity_project import (CharityProjectCreate,
                                          CharityProjectDB,
                                          CharityProjectUpdate)
-from app.services.invest import investment_process, update_db
+from app.services.invest import investment_process
 router = APIRouter()
 
 
@@ -48,7 +48,8 @@ async def create_reservation(
                                                     commit=False)
     uninvested_objects = await donation_crud.get_uninvested_objects(session)
     investment = investment_process(new_project, uninvested_objects)
-    await update_db(session, investment)
+    await session.commit()
+    await session.refresh(investment)
     return new_project
 
 
